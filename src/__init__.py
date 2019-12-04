@@ -2,7 +2,7 @@ from flask import Flask, redirect, url_for, flash, render_template
 from flask_login import login_required, logout_user
 from .config import Config
 from .models import db, login_manager
-from .oauth import blueprint
+from .controllers.oauth import blueprint
 from .cli import create_db
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -15,6 +15,11 @@ db.init_app(app)
 login_manager.init_app(app)
 migrate = Migrate(app, db)
 CORS(app)
+
+
+from .controllers.user import user_blueprint
+app.register_blueprint(user_blueprint, url_prefix='/user')
+
 
 @app.route("/logout")
 @login_required

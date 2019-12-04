@@ -1,10 +1,10 @@
-from flask import flash
+from flask import flash, redirect
 from flask_login import current_user, login_user
 from flask_dance.contrib.google import make_google_blueprint
 from flask_dance.consumer import oauth_authorized, oauth_error
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from sqlalchemy.orm.exc import NoResultFound
-from .models import db, User, OAuth
+from src.models import db, User, OAuth, Token
 
 
 blueprint = make_google_blueprint(
@@ -53,7 +53,14 @@ def google_logged_in(blueprint, token):
         flash("Successfully signed in.")
 
     # Disable Flask-Dance's default behavior for saving the OAuth token
-    return False
+    token_query = Token.query.filter_by(user_id=current_user.id)
+    try:
+        token = token_query.one()
+    except NoResultFound:
+        token = Token()
+        token = token.create_token(current_user.id)
+
+    return redirect("https://localhost:3000/home?api_key={}".format(token.uuid))
 
 
 # notify on OAuth provider error
