@@ -10,3 +10,4 @@ class Config(object):
     GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
     EMAIL_API=os.environ.get("EMAIL_API")
     EMAIL_DOMAIN=os.environ.get("EMAIL_DOMAIN")
+    CLIENT_URL=os.environ.get("CLIENT_URL")

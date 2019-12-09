@@ -74,7 +74,7 @@ def send_email(token, email, name):
                              data={"from": "Nguyen Anh Thi <shi901311@gmail.com>",
                                    "to": [email],
                                    "subject": "Reset Password",
-                                   "text": f"Go to https://localhost:3000/new-password/{token} to set a new password please!"})
+                                   "text": f"Go to {app.config['CLIENT_URL']}/new-password/{token} to set a new password please!"})
 
     print(response)
 
