@@ -60,8 +60,7 @@ def google_logged_in(blueprint, token):
         token = Token()
         token = token.create_token(current_user.id)
     
-    print("REDIRECT URL>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:", os.environ.get("ClIENT_URL"))
-    return redirect(os.environ.get("ClIENT_URL") + f"/?api_key={token.uuid}")
+    return redirect(os.environ.get("CLIENT_URL") + f"/?api_key={token.uuid}")
 
 
 # notify on OAuth provider error
