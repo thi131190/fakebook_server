@@ -1,4 +1,4 @@
-from flask import Blueprint, request, url_for, render_template, flash, redirect, jsonify
+from flask import Blueprint, request, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
 from src.models import User, Token
 from src import db, login_manager
@@ -18,10 +18,11 @@ def load_user(id):
 @user_blueprint.route('/get_user')
 @login_required
 def get_user():
-    return jsonify(user={"id":current_user.id, "email":current_user.email})
+    user = User.query.get(current_user.id)
+    return jsonify({"user": user.get_json()})
 
 
-@user_blueprint.route('/signup', methods=['GET', 'POST'])
+@user_blueprint.route('/signup', methods=['POST'])
 def signup():
     if request.method == 'POST':
         email = request.get_json()['email']
@@ -32,12 +33,12 @@ def signup():
         if check_email:
             return jsonify({"code": 409})
         else:
-            new_user = User(email=email, firstname=firstname, lastname=lastname)
+            new_user = User(email=email, firstname=firstname,
+                            lastname=lastname)
             new_user.set_password(password)
             db.session.add(new_user)
             db.session.commit()
             return jsonify({"code": 200})
-    return redirect('https://localhost:3000/signin')
 
 
 @user_blueprint.route('/login', methods=['GET', 'POST'])
@@ -46,12 +47,12 @@ def login():
         email = request.get_json()['email']
         password = request.get_json()['password']
         user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password) :
+        if user and user.check_password(password):
             login_user(user)
             token = Token()
             token = token.create_token(current_user.id)
-            return jsonify({"code" : 200, "user": {"id":current_user.id, "email":current_user.email}, "apiKey": token.uuid})
-        return jsonify({"code" : 401})
+            return jsonify({"code": 200, "user": {"id": current_user.id, "email": current_user.email}, "apiKey": token.uuid})
+        return jsonify({"code": 401})
 
 
 @user_blueprint.route('/logout')
@@ -63,8 +64,8 @@ def logout():
         db.session.delete(token)
         db.session.commit()
         logout_user()
-        return jsonify({"code" : 200})
-    return jsonify({"code" : 400})
+        return jsonify({"code": 200})
+    return jsonify({"code": 400})
 
 
 def send_email(token, email, name):
@@ -78,6 +79,7 @@ def send_email(token, email, name):
 
     print(response)
 
+
 @user_blueprint.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -87,12 +89,13 @@ def forgot_password():
             print("Email not exist!")
             return jsonify({"code": 404})
         s = URLSafeTimedSerializer(app.secret_key)
-        token = s.dumps(user.email, salt="UMEO")       
+        token = s.dumps(user.email, salt="UMEO")
         name = f'{user.firstname} {user.lastname}'
         print("TOKEN:", token)
         print("EMAIL", user.email)
-        send_email(token, user.email, name) 
+        send_email(token, user.email, name)
         return jsonify({"code": 200})
+
 
 @user_blueprint.route('/new-password/<token>', methods=['POST'])
 def new_password(token):
@@ -103,9 +106,9 @@ def new_password(token):
     except:
         print("Invalid token")
         return jsonify({"code": 404})
-    
+
     print("EMAIL", email)
-        
+
     if request.method == "POST":
         if request.get_json()['password'] != request.get_json()['confirm_password']:
             print('Password not match!')
@@ -113,5 +116,43 @@ def new_password(token):
         user = User.query.filter_by(email=email).first()
         user.set_password(request.get_json()['password'])
         db.session.commit()
-        flash("You have set new password", "successful")
+        print("You have set new password", "successful")
         return jsonify({"code": 200})
+
+
+@user_blueprint.route('/follow/<int:id>', methods=['POST'])
+@login_required
+def follow(id):
+    print(current_user.id, id)
+    if current_user.id != id:
+        followed_user = User.query.get(id)
+        current_user.follow(followed_user)
+        db.session.commit()
+        return jsonify({"code": 200})
+    return jsonify({"code": 400})
+
+
+@user_blueprint.route('/unfollow/<int:id>', methods=['POST'])
+@login_required
+def unfollow(id):
+    followed_user = User.query.get(id)
+    current_user.unfollow(followed_user)
+    db.session.commit()
+    return jsonify({"code": 200})
+
+
+@user_blueprint.route('/profile/<id>')
+@login_required
+def get_profile(id):
+    user = User.query.get(id)
+    return jsonify({"user": user.get_json(current_user)})
+
+
+@user_blueprint.route('/search/<keyword>')
+@login_required
+def search_user(keyword):
+    print("KEYWORD", keyword)
+    users = [user.get_json() for user in User.query.filter(User.email.like(f"%{keyword}%")).all()]
+    # users = User.query.filter(User.email.like(f"%{keyword}%")).all()
+    print("USERS", users)
+    return jsonify(users)

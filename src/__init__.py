@@ -3,6 +3,8 @@ from flask_login import login_required, logout_user
 from .config import Config
 from .models import db, login_manager
 from .controllers.oauth import blueprint
+# from .controllers.user import user_blueprint
+# from .controllers.post import post_blueprint
 from .cli import create_db
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -19,6 +21,9 @@ CORS(app)
 
 from .controllers.user import user_blueprint
 app.register_blueprint(user_blueprint, url_prefix='/user')
+
+from .controllers.post import post_blueprint
+app.register_blueprint(post_blueprint, url_prefix='/posts')
 
 
 @app.route("/logout")
