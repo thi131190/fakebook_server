@@ -91,15 +91,18 @@ class Post(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String, nullable=False)
+    post_img = db.Column(db.String, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    created_at = db.Column(db.DateTime(timezone=True),
+                           server_default=db.func.now())
     updated_at = db.Column(
-        db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+        db.DateTime(timezone=True), server_default=db.func.now(), server_onupdate=db.func.now())
 
     def get_json(self):
         return {
             "id": self.id,
             "body": self.body,
+            "imgUrl": self.post_img,
             "author": User.query.get(self.user_id).get_json(),
             "isLiked": bool(Like.query.filter_by(user_id=current_user.id, post_id=self.id).first()),
             "likeCount": Like.query.filter_by(post_id=self.id).count(),
@@ -121,9 +124,10 @@ class Comment(db.Model):
     body = db.Column(db.String, nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     post_id = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    created_at = db.Column(db.DateTime(timezone=True),
+                           server_default=db.func.now())
     updated_at = db.Column(
-        db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+        db.DateTime(timezone=True), server_default=db.func.now(), server_onupdate=db.func.now())
 
     def get_json(self):
         return {

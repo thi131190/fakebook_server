@@ -13,7 +13,8 @@ post_blueprint = Blueprint('post_bp', __name__)
 @post_blueprint.route('/')
 @login_required
 def get_all_posts():
-    posts = [post.get_json() for post in current_user.followed_posts()]
+    # posts = [post.get_json() for post in current_user.followed_posts()]
+    posts = [post.get_json() for post in Post.query.all()]
     return jsonify(posts)
 
 
@@ -21,8 +22,11 @@ def get_all_posts():
 @login_required
 def create_new_post():
     if request.method == 'POST':
-        new_post = Post(body=request.get_json()[
-                        'body'], user_id=current_user.id)
+        new_post = Post(
+            body=request.get_json()['body'],
+            post_img=request.get_json()['image_url'],
+            user_id=current_user.id
+        )
         db.session.add(new_post)
         db.session.commit()
     return jsonify({"code": 200})
@@ -56,6 +60,7 @@ def update_post(id):
         post = Post.query.get(id)
         if post:
             post.body = request.get_json()['body']
+            post.post_img = request.get_json()['image_url']
             db.session.commit()
             return jsonify({"code": 200})
         return jsonify({"code": 404})
@@ -63,8 +68,11 @@ def update_post(id):
 
 @post_blueprint.route('/<id>/comments', methods=['POST'])
 def create_comment(id):
-    comment = Comment(user_id=current_user.id, post_id=id,
-                      body=request.get_json()['body'])
+    comment = Comment(
+        user_id=current_user.id,
+        post_id=id,
+        body=request.get_json()['body']
+    )
     db.session.add(comment)
     db.session.commit()
     return jsonify({"code": 200})

@@ -33,8 +33,11 @@ def signup():
         if check_email:
             return jsonify({"code": 409})
         else:
-            new_user = User(email=email, firstname=firstname,
-                            lastname=lastname)
+            new_user = User(
+                email=email,
+                firstname=firstname,
+                lastname=lastname
+            )
             new_user.set_password(password)
             db.session.add(new_user)
             db.session.commit()
@@ -152,7 +155,7 @@ def get_profile(id):
 @login_required
 def search_user(keyword):
     print("KEYWORD", keyword)
-    users = [user.get_json() for user in User.query.filter(User.email.like(f"%{keyword}%")).all()]
-    # users = User.query.filter(User.email.like(f"%{keyword}%")).all()
+    users = [user.get_json()
+             for user in User.query.filter(User.email.like(f"%{keyword}%")).all()]
     print("USERS", users)
     return jsonify(users)
