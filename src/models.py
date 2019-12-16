@@ -53,9 +53,16 @@ class User(UserMixin, db.Model):
             self.followed.remove(user)
 
     def followed_posts(self):
-        return Post.query.join(
-            followers, (followers.c.followed_id == Post.user_id)).filter(or_(followers.c.follower_id == self.id, Post.user_id == self.id)
-                                                                         ).order_by(Post.created_at.desc())
+
+        followed = Post.query.join(
+            followers, (followers.c.followed_id == Post.user_id)).filter(
+                followers.c.follower_id == self.id)
+        own = Post.query.filter_by(user_id=self.id)
+        return followed.union(own).order_by(Post.created_at.desc())
+
+        # return Post.query.join(
+        #     followers, (followers.c.followed_id == Post.user_id)).filter(or_(followers.c.follower_id == self.id, Post.user_id == self.id)
+        #                                                                  ).order_by(Post.created_at.desc())
 
     def get_json(self, user=None):
         return {

@@ -13,8 +13,8 @@ post_blueprint = Blueprint('post_bp', __name__)
 @post_blueprint.route('/')
 @login_required
 def get_all_posts():
-    # posts = [post.get_json() for post in current_user.followed_posts()]
-    posts = [post.get_json() for post in Post.query.all()]
+    posts = [post.get_json() for post in current_user.followed_posts()]
+    # posts = [post.get_json() for post in Post.query.all()]
     return jsonify(posts)
 
 
@@ -37,6 +37,27 @@ def create_new_post():
 def get_post_by_id(id):
     post = Post.query.get(int(id))
     return jsonify(post.get_json())
+
+
+@post_blueprint.route('/<id>', methods=['DELETE'])
+@login_required
+def delete_post(id):
+    if request.method == "DELETE":
+        post = Post.query.filter_by(id=id).first()
+        if post:
+            comments = Comment.query.filter_by(post_id=id).all()
+            for comment in comments:
+                db.session.delete(comment)
+
+            likes = Like.query.filter_by(post_id=id).all()
+            for like in likes:
+                db.session.delete(like)
+
+            db.session.commit()
+            db.session.delete(post)
+            db.session.commit()
+            return jsonify({"code": 200})
+        return jsonify({"code": 404})
 
 
 @post_blueprint.route('/<id>/like', methods=['POST'])
