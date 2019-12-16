@@ -114,7 +114,7 @@ class Post(db.Model):
             "isLiked": bool(Like.query.filter_by(user_id=current_user.id, post_id=self.id).first()),
             "likeCount": Like.query.filter_by(post_id=self.id).count(),
             "commentCount": Comment.query.filter_by(post_id=self.id).count(),
-            "created_at": self.created_at.strftime("%d-%b-%Y"),
+            "created_at": self.created_at,
         }
 
 
@@ -142,7 +142,7 @@ class Comment(db.Model):
             "body": self.body,
             "commenter": User.query.get(self.user_id).get_json(),
             "post": Post.query.get(self.post_id).get_json(),
-            "created_at": self.created_at.strftime("%d-%b-%Y"),
+            "created_at": self.created_at,
         }
 
 
