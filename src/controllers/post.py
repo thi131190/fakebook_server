@@ -19,7 +19,7 @@ def get_all_posts():
 
 
 @post_blueprint.route('/', methods=['POST'])
-@login_required
+# @login_required
 def create_new_post():
     if request.method == 'POST':
         new_post = Post(
