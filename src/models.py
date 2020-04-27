@@ -111,7 +111,7 @@ class Post(db.Model):
             "body": self.body,
             "imgUrl": self.post_img,
             "author": User.query.get(self.user_id).get_json(),
-            "isLiked": bool(Like.query.filter_by(user_id=current_user.id, post_id=self.id).first()),
+            # "isLiked": bool(Like.query.filter_by(user_id=current_user.id, post_id=self.id).first()),
             "likeCount": Like.query.filter_by(post_id=self.id).count(),
             "commentCount": Comment.query.filter_by(post_id=self.id).count(),
             "created_at": self.created_at,

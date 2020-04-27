@@ -11,10 +11,10 @@ post_blueprint = Blueprint('post_bp', __name__)
 
 
 @post_blueprint.route('/')
-@login_required
+# @login_required
 def get_all_posts():
-    posts = [post.get_json() for post in current_user.followed_posts()]
-    # posts = [post.get_json() for post in Post.query.all()]
+    # posts = [post.get_json() for post in current_user.followed_posts()]
+    posts = [post.get_json() for post in Post.query.all()]
     return jsonify(posts)
 
 
